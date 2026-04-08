@@ -1,0 +1,24 @@
+{
+  "name": "@market-place/shared",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./api": {
+      "types": "./src/api.ts",
+      "default": "./dist/api.js"
+    }
+  },
+  "types": "./src/index.ts",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}
