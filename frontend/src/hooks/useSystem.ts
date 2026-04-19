@@ -1,8 +1,16 @@
-import type { AddCartItemRequest, PublicProductListParams } from "@market-place/shared/api";
+import type {
+  AddCartItemRequest,
+  PublicProductListParams,
+  UpdateCartItemRequest,
+  UserOrderListParams,
+} from "@market-place/shared/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   addCartItem,
+  cancelOrder,
+  cancelOrderItem,
+  checkout,
   getCart,
   getCategories,
   getHealth,
@@ -10,6 +18,10 @@ import {
   getPublicProducts,
   getPublicShopDetail,
   getPublicShopProducts,
+  getUserOrderDetail,
+  getUserOrders,
+  removeCartItem,
+  updateCartItemQuantity,
 } from "@/api/modules/system";
 
 export function useHealthQuery() {
@@ -71,6 +83,83 @@ export function useAddCartItemMutation() {
     mutationFn: (payload: AddCartItemRequest) => addCartItem(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+}
+
+export function useUpdateCartItemQuantityMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cartItemId, payload }: { cartItemId: string; payload: UpdateCartItemRequest }) =>
+      updateCartItemQuantity(cartItemId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+}
+
+export function useRemoveCartItemMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cartItemId: string) => removeCartItem(cartItemId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+}
+
+export function useCheckoutMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: checkout,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["cart"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-orders"] });
+    },
+  });
+}
+
+export function useUserOrdersQuery(params: UserOrderListParams = {}) {
+  return useQuery({
+    queryKey: ["user-orders", params],
+    queryFn: () => getUserOrders(params),
+  });
+}
+
+export function useUserOrderDetailQuery(orderId?: string) {
+  return useQuery({
+    queryKey: ["user-order-detail", orderId],
+    queryFn: () => getUserOrderDetail(orderId!),
+    enabled: Boolean(orderId),
+  });
+}
+
+export function useCancelOrderMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderId: string) => cancelOrder(orderId),
+    onSuccess: (_, orderId) => {
+      void queryClient.invalidateQueries({ queryKey: ["user-orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-order-detail", orderId] });
+    },
+  });
+}
+
+export function useCancelOrderItemMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ orderId, orderItemId }: { orderId: string; orderItemId: string }) =>
+      cancelOrderItem(orderId, orderItemId),
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ["user-orders"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["user-order-detail", variables.orderId],
+      });
     },
   });
 }

@@ -15,6 +15,8 @@ const ProductDetailPage = lazy(() => import("@/pages/store/ProductDetailPage"));
 const PublicShopPage = lazy(() => import("@/pages/store/PublicShopPage"));
 const AccountPage = lazy(() => import("@/pages/store/AccountPage"));
 const CartPage = lazy(() => import("@/pages/store/CartPage"));
+const OrdersPage = lazy(() => import("@/pages/store/OrdersPage"));
+const OrderDetailPage = lazy(() => import("@/pages/store/OrderDetailPage"));
 const UserLoginPage = lazy(() => import("@/pages/auth/UserLoginPage"));
 const UserRegisterPage = lazy(() => import("@/pages/auth/UserRegisterPage"));
 const AdminLoginPage = lazy(() => import("@/pages/auth/AdminLoginPage"));
@@ -43,6 +45,8 @@ function App() {
               <Route element={<RoleRoute allowedRoles={["USER"]} redirectTo="/" />}>
                 <Route element={<AccountPage />} path="account" />
                 <Route element={<CartPage />} path="cart" />
+                <Route element={<OrdersPage />} path="orders" />
+                <Route element={<OrderDetailPage />} path="orders/:orderId" />
               </Route>
             </Route>
           </Route>

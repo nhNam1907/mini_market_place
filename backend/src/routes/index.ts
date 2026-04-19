@@ -7,6 +7,7 @@ import publicProductRoutes from "./publicProductRoutes.js";
 import sellerProductRoutes from "./sellerProductRoutes.js";
 import shopRoutes from "./shopRoutes.js";
 import cartRoutes from "./cartRoutes.js";
+import orderRoutes from "./orderRoutes.js";
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use("/store", publicProductRoutes);
 router.use("/store/shops", shopRoutes);
 router.use("/categories", categoriesRoutes);
 router.use("/cart", cartRoutes);
+router.use("/orders", orderRoutes);
 
 export default router;

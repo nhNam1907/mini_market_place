@@ -12,6 +12,22 @@ enum UserRole {
   USER
 }
 
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderItemStatus {
+  PENDING
+  CONFIRMED
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -20,6 +36,7 @@ model User {
   role      UserRole @default(USER)
   shop      Shop?
   cart      Cart?
+  orders    Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -44,19 +61,20 @@ model Category {
 }
 
 model Product {
-  id          String     @id @default(uuid())
+  id          String      @id @default(uuid())
   name        String
   description String?
-  price       Decimal    @db.Decimal(10, 2)
-  stock       Int        @default(0)
+  price       Decimal     @db.Decimal(10, 2)
+  stock       Int         @default(0)
   imageUrl    String?
   categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id])
+  category    Category    @relation(fields: [categoryId], references: [id])
   shopId      String
-  shop        Shop       @relation(fields: [shopId], references: [id])
+  shop        Shop        @relation(fields: [shopId], references: [id])
   cartItems   CartItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([shopId])
   @@index([shopId, categoryId])
@@ -83,4 +101,42 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, productId])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      OrderStatus @default(PENDING)
+  items       OrderItem[]
+  totalAmount Decimal     @db.Decimal(10, 2)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id      String @id @default(uuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  productId    String
+  productName  String
+  productImage String?
+  status       OrderItemStatus @default(PENDING)
+  unitPrice    Decimal  @db.Decimal(10, 2)
+  quantity     Int
+  lineTotal    Decimal  @db.Decimal(10, 2)
+  shopId       String
+  shopName     String
+  categoryId   String?
+  categoryName String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  product      Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([shopId])
 }

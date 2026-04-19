@@ -1,12 +1,91 @@
-import { ArrowLeftOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Empty, Row, Skeleton, Space, Tag, Typography } from "antd";
-import { Link } from "react-router-dom";
+import { ArrowLeftOutlined, DeleteOutlined, MinusOutlined, PlusOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Empty, Row, Skeleton, Space, Tag, Typography, message } from "antd";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 
-import { useCartQuery } from "@/hooks/useSystem";
+import {
+  useCartQuery,
+  useCheckoutMutation,
+  useRemoveCartItemMutation,
+  useUpdateCartItemQuantityMutation,
+} from "@/hooks/useSystem";
 
 function CartPage() {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useCartQuery();
+  const updateCartItemQuantityMutation = useUpdateCartItemQuantityMutation();
+  const removeCartItemMutation = useRemoveCartItemMutation();
+  const checkoutMutation = useCheckoutMutation();
   const cart = data?.data;
+
+  const handleApiError = (error: unknown, fallbackMessage: string) => {
+    if (axios.isAxiosError(error)) {
+      const apiMessage = error.response?.data?.message;
+
+      if (typeof apiMessage === "string") {
+        void message.error(apiMessage);
+        return;
+      }
+    }
+
+    void message.error(fallbackMessage);
+  };
+
+  const handleIncreaseQuantity = async (cartItemId: string, quantity: number, stock: number) => {
+    if (quantity >= stock) {
+      void message.warning("You have reached the available stock for this product.");
+      return;
+    }
+
+    try {
+      await updateCartItemQuantityMutation.mutateAsync({
+        cartItemId,
+        payload: {
+          quantity: quantity + 1,
+        },
+      });
+      void message.success("Cart item quantity updated successfully.");
+    } catch (error) {
+      handleApiError(error, "Could not update cart item quantity.");
+    }
+  };
+
+  const handleDecreaseQuantity = async (cartItemId: string, quantity: number) => {
+    if (quantity <= 1) {
+      return;
+    }
+
+    try {
+      await updateCartItemQuantityMutation.mutateAsync({
+        cartItemId,
+        payload: {
+          quantity: quantity - 1,
+        },
+      });
+      void message.success("Cart item quantity updated successfully.");
+    } catch (error) {
+      handleApiError(error, "Could not update cart item quantity.");
+    }
+  };
+
+  const handleRemoveItem = async (cartItemId: string) => {
+    try {
+      await removeCartItemMutation.mutateAsync(cartItemId);
+      void message.success("Cart item removed successfully.");
+    } catch (error) {
+      handleApiError(error, "Could not remove cart item.");
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const response = await checkoutMutation.mutateAsync();
+      void message.success(response.message || "Checkout successful.");
+      navigate("/orders");
+    } catch (error) {
+      handleApiError(error, "Could not complete checkout.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -51,8 +130,8 @@ function CartPage() {
           Your Cart
         </Typography.Title>
         <Typography.Text type="secondary">
-          Review the products already added from your backend cart before we build add, update, and
-          checkout actions.
+          Review your selected items, adjust quantities, or remove products before moving on to the
+          checkout flow.
         </Typography.Text>
       </div>
 
@@ -91,9 +170,35 @@ function CartPage() {
                       </Typography.Paragraph>
 
                       <div className="cart-meta-row">
-                        <Tag icon={<ShoppingCartOutlined />}>Quantity: {item.quantity}</Tag>
-                        <Tag>Stock: {item.product.stock}</Tag>
+                        <Tag icon={<ShoppingCartOutlined />}>Stock: {item.product.stock}</Tag>
                       </div>
+
+                      <Space size={12} wrap>
+                        <Space.Compact>
+                          <Button
+                            disabled={item.quantity <= 1 || updateCartItemQuantityMutation.isPending || checkoutMutation.isPending}
+                            icon={<MinusOutlined />}
+                            onClick={() => void handleDecreaseQuantity(item.id, item.quantity)}
+                          />
+                          <Button className="detail-quantity-value" disabled>
+                            {item.quantity}
+                          </Button>
+                          <Button
+                            disabled={item.quantity >= item.product.stock || updateCartItemQuantityMutation.isPending || checkoutMutation.isPending}
+                            icon={<PlusOutlined />}
+                            onClick={() => void handleIncreaseQuantity(item.id, item.quantity, item.product.stock)}
+                          />
+                        </Space.Compact>
+                        <Button
+                          danger
+                          disabled={checkoutMutation.isPending}
+                          icon={<DeleteOutlined />}
+                          loading={removeCartItemMutation.isPending}
+                          onClick={() => void handleRemoveItem(item.id)}
+                        >
+                          Remove
+                        </Button>
+                      </Space>
                     </Space>
                   </Col>
                   <Col md={6} xs={24}>
@@ -133,9 +238,12 @@ function CartPage() {
                 </Typography.Title>
               </Row>
 
+              <Button loading={checkoutMutation.isPending} onClick={() => void handleCheckout()} size="large" type="primary">
+                Checkout Now
+              </Button>
+
               <Typography.Paragraph style={{ marginBottom: 0 }} type="secondary">
-                This page is now connected to your backend cart API. The next step can focus on add
-                to cart, update quantity, and remove item actions.
+                Cart page is now connected to fetch, update quantity, remove item, and checkout actions.
               </Typography.Paragraph>
             </Space>
           </Card>

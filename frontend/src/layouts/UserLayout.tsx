@@ -23,6 +23,7 @@ function UserLayout() {
     { key: "/", label: <Link to="/">Home</Link> },
     { key: "/catalog", label: <Link to="/catalog">Catalog</Link> },
     { key: "/account", label: <Link to="/account">My Account</Link> },
+    { key: "/orders", label: <Link to="/orders">My Orders</Link> },
   ];
 
   const handleLogout = () => {

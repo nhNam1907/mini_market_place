@@ -11,6 +11,9 @@ export enum ErrorCode {
   BAD_REQUEST = "BAD_REQUEST",
   PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND",
   INSUFFICIENT_STOCK = "INSUFFICIENT_STOCK",
+  CART_EMPTY = "CART_EMPTY",
+  ORDER_NOT_FOUND = "ORDER_NOT_FOUND",
+  ORDER_ITEM_NOT_FOUND = "ORDER_ITEM_NOT_FOUND",
 }
 
 export const ErrorMessages: Record<ErrorCode, string> = {
@@ -26,6 +29,9 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.BAD_REQUEST]: "Bad request",
   [ErrorCode.PRODUCT_NOT_FOUND]: "Product not found",
   [ErrorCode.INSUFFICIENT_STOCK]: "Not enough stock available",
+  [ErrorCode.CART_EMPTY]: "Cart is empty",
+  [ErrorCode.ORDER_NOT_FOUND]: "Order not found",
+  [ErrorCode.ORDER_ITEM_NOT_FOUND]: "Order item not found",
 };
 
 export class AppError extends Error {

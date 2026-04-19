@@ -180,7 +180,81 @@ export type AddCartItemRequest = {
   quantity: number;
 };
 
-export type AddCartItemResponse = CartResponse;
+export type UpdateCartItemRequest = {
+  quantity: number;
+};
+
+export type CartItemActionResponse = {
+  success: boolean;
+  message: string;
+  data: CartItem;
+};
+
+export type AddCartItemResponse = CartItemActionResponse;
+export type UpdateCartItemResponse = CartItemActionResponse;
+export type RemoveCartItemResponse = CartItemActionResponse;
+
+export type CheckoutOrderItem = {
+  id: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  productImage: string | null;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+  shopId: string;
+  shopName: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  createdAt: string;
+  updatedAt: string;
+  status: string;
+};
+
+export type CheckoutOrder = {
+  id: string;
+  userId: string;
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+  items: CheckoutOrderItem[];
+};
+
+export type CheckoutResponse = {
+  success: boolean;
+  message: string;
+  data: CheckoutOrder | null;
+};
+
+export type UserOrderListParams = {
+  pageNumber?: number;
+  pageSize?: number;
+};
+
+export type UserOrderListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    meta: {
+      pageNumber: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+    };
+    orders: CheckoutOrder[];
+  };
+};
+
+export type UserOrderDetailResponse = {
+  success: boolean;
+  message: string;
+  data: CheckoutOrder;
+};
+
+export type CancelOrderResponse = UserOrderDetailResponse;
+export type CancelOrderItemResponse = UserOrderDetailResponse;
 
 export type SellerProduct = {
   id: string;
