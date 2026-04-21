@@ -24,6 +24,8 @@ const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage")
 const AdminProductsPage = lazy(() => import("@/pages/admin/AdminProductsPage"));
 const AdminOrdersPage = lazy(() => import("@/pages/admin/AdminOrdersPage"));
 const SellerDashboardPage = lazy(() => import("@/pages/seller/SellerDashboardPage"));
+const SellerOrdersPage = lazy(() => import("@/pages/seller/SellerOrdersPage"));
+const SellerOrderDetailPage = lazy(() => import("@/pages/seller/SellerOrderDetailPage"));
 const SellerProductsPage = lazy(() => import("@/pages/seller/SellerProductsPage"));
 const SellerShopPage = lazy(() => import("@/pages/seller/SellerShopPage"));
 
@@ -70,6 +72,8 @@ function App() {
               <Route element={<SellerLayout />} path="/seller">
                 <Route element={<SellerDashboardPage />} index />
                 <Route element={<SellerProductsPage />} path="products" />
+                <Route element={<SellerOrdersPage />} path="orders" />
+                <Route element={<SellerOrderDetailPage />} path="orders/:orderId" />
                 <Route element={<SellerShopPage />} path="shop" />
               </Route>
             </Route>

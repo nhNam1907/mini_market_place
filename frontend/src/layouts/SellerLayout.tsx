@@ -1,6 +1,7 @@
 import {
   DashboardOutlined,
   LogoutOutlined,
+  ShoppingOutlined,
   ShopOutlined,
   TagsOutlined,
   UserOutlined,
@@ -25,6 +26,11 @@ const menuItems = [
     label: <Link to="/seller/products">Products</Link>,
   },
   {
+    key: "/seller/orders",
+    icon: <ShoppingOutlined />,
+    label: <Link to="/seller/orders">Orders</Link>,
+  },
+  {
     key: "/seller/shop",
     icon: <ShopOutlined />,
     label: <Link to="/seller/shop">Shop</Link>,
@@ -36,6 +42,9 @@ function SellerLayout() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const selectedMenuKey = location.pathname.startsWith("/seller/orders/")
+    ? "/seller/orders"
+    : location.pathname;
 
   const handleLogout = () => {
     clearAuth();
@@ -44,14 +53,14 @@ function SellerLayout() {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider breakpoint="lg" collapsedWidth="0" theme="light" width={260}>
+      <Sider theme="light" width={260}>
         <div className="admin-brand">
           <Title level={4} style={{ margin: 0 }}>
             Seller Studio
           </Title>
           <Text type="secondary">Your shop workspace</Text>
         </div>
-        <Menu items={menuItems} mode="inline" selectedKeys={[location.pathname]} />
+        <Menu items={menuItems} mode="inline" selectedKeys={[selectedMenuKey]} />
       </Sider>
       <Layout>
         <Header className="seller-header">

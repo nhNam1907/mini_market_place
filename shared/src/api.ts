@@ -281,6 +281,109 @@ export type SellerProductListResponse = {
   data: SellerProduct[];
 };
 
+export type SellerOrderItemStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "SHIPPING"
+  | "DELIVERED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type SellerOrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "SHIPPING"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type SellerOrderListParams = {
+  pageNumber?: number;
+  pageSize?: number;
+  status?: SellerOrderItemStatus;
+};
+
+export type SellerOrderItem = {
+  id: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  status: SellerOrderItemStatus;
+  createdAt: string;
+  updatedAt: string;
+  lineTotal: number;
+  order: {
+    id: string;
+    userId: string;
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  };
+};
+
+export type SellerOrderItemListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      pageSize: number;
+    };
+    items: SellerOrderItem[];
+  };
+};
+
+export type UpdateSellerOrderItemStatusRequest = {
+  status: SellerOrderItemStatus;
+};
+
+export type UpdateSellerOrderItemStatusResponse = {
+  success: boolean;
+  message: string;
+  data: SellerOrderItem;
+};
+
+export type SellerOrderDetailItem = {
+  id: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  status: SellerOrderItemStatus;
+  createdAt: string;
+  updatedAt: string;
+  lineTotal: number;
+};
+
+export type SellerOrderDetailResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    orderItems: SellerOrderDetailItem[];
+    order: {
+      id: string;
+      userId: string;
+      status: SellerOrderStatus;
+      createdAt: string;
+      updatedAt: string;
+      user: {
+        name: string;
+        email: string;
+      };
+    };
+    totalItems: number;
+    totalAmount: number;
+  };
+};
+
 export type CreateSellerProductRequest = {
   name: string;
   description?: string;
