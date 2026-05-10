@@ -27,6 +27,8 @@ const SellerDashboardPage = lazy(() => import("@/pages/seller/SellerDashboardPag
 const SellerOrdersPage = lazy(() => import("@/pages/seller/SellerOrdersPage"));
 const SellerOrderDetailPage = lazy(() => import("@/pages/seller/SellerOrderDetailPage"));
 const SellerProductsPage = lazy(() => import("@/pages/seller/SellerProductsPage"));
+const SellerProductCreatePage = lazy(() => import("@/pages/seller/SellerProductCreatePage"));
+const SellerProductDetailPage = lazy(() => import("@/pages/seller/SellerProductDetailPage"));
 const SellerShopPage = lazy(() => import("@/pages/seller/SellerShopPage"));
 
 function App() {
@@ -72,6 +74,8 @@ function App() {
               <Route element={<SellerLayout />} path="/seller">
                 <Route element={<SellerDashboardPage />} index />
                 <Route element={<SellerProductsPage />} path="products" />
+                <Route element={<SellerProductCreatePage />} path="products/new" />
+                <Route element={<SellerProductDetailPage />} path="products/:productId" />
                 <Route element={<SellerOrdersPage />} path="orders" />
                 <Route element={<SellerOrderDetailPage />} path="orders/:orderId" />
                 <Route element={<SellerShopPage />} path="shop" />

@@ -1,16 +1,16 @@
-import type { CreateSellerProductRequest, SellerProduct } from "@market-place/shared/api";
+import type { SellerProduct } from "@market-place/shared/api";
 import type { TableProps } from "antd";
-import { App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Table, Typography } from "antd";
-import { useMemo, useState } from "react";
+import { Button, Card, Space, Table, Typography } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 
-import { useCreateSellerProductMutation, useSellerProductsQuery } from "@/hooks/useSellerProducts";
-import { useCategoriesQuery } from "@/hooks/useSystem";
+import { useSellerProductsQuery } from "@/hooks/useSellerProducts";
 
 const columns: TableProps<SellerProduct>["columns"] = [
   {
     title: "Product",
     dataIndex: "name",
     key: "name",
+    render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
   },
   {
     title: "Category",
@@ -28,37 +28,17 @@ const columns: TableProps<SellerProduct>["columns"] = [
     dataIndex: "stock",
     key: "stock",
   },
+  {
+    title: "Images",
+    key: "images",
+    render: (_, record) => record.images.length,
+  },
 ];
 
 function SellerProductsPage() {
-  const { message } = App.useApp();
+  const navigate = useNavigate();
   const { data, isLoading } = useSellerProductsQuery();
-  const { data: categoryResponse, isLoading: isCategoriesLoading } = useCategoriesQuery();
-  const createMutation = useCreateSellerProductMutation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm<CreateSellerProductRequest>();
-
   const products = data?.data ?? [];
-  const categoryOptions = useMemo(
-    () =>
-      (categoryResponse?.data ?? []).map((category) => ({
-        label: category.name,
-        value: category.id,
-      })),
-    [categoryResponse?.data],
-  );
-
-  const handleCreateProduct = async (values: CreateSellerProductRequest) => {
-    try {
-      const response = await createMutation.mutateAsync(values);
-      await message.success(response.message);
-      form.resetFields();
-      setIsModalOpen(false);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create product";
-      message.error(errorMessage);
-    }
-  };
 
   return (
     <Card bordered={false}>
@@ -67,11 +47,11 @@ function SellerProductsPage() {
           <div>
             <Typography.Title level={3}>My Products</Typography.Title>
             <Typography.Text type="secondary">
-              Seller product management using `GET /api/seller/products` and `POST /api/seller/products`.
+              Click a row to view product detail. Create products from a dedicated page.
             </Typography.Text>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} type="primary">
-            Add product
+          <Button type="primary">
+            <Link to="/seller/products/new">Add product</Link>
           </Button>
         </Space>
 
@@ -79,70 +59,14 @@ function SellerProductsPage() {
           columns={columns}
           dataSource={products}
           loading={isLoading}
+          onRow={(record) => ({
+            className: "seller-product-row",
+            onClick: () => navigate(`/seller/products/${record.id}`),
+          })}
           pagination={false}
           rowKey="id"
         />
       </Space>
-
-      <Modal
-        destroyOnHidden
-        okButtonProps={{ htmlType: "submit", loading: createMutation.isPending }}
-        okText="Create"
-        onCancel={() => setIsModalOpen(false)}
-        open={isModalOpen}
-        title="Create product"
-        modalRender={(modal) => (
-          <Form<CreateSellerProductRequest> form={form} layout="vertical" onFinish={handleCreateProduct}>
-            {modal}
-          </Form>
-        )}
-      >
-        <Form.Item
-          label="Name"
-          name="name"
-          rules={[{ required: true, message: "Please enter product name" }]}
-        >
-          <Input placeholder="Mechanical Keyboard" />
-        </Form.Item>
-
-        <Form.Item label="Description" name="description">
-          <Input.TextArea placeholder="Short product description" rows={3} />
-        </Form.Item>
-
-        <Form.Item
-          initialValue={1}
-          label="Price"
-          name="price"
-          rules={[{ required: true, message: "Please enter price" }]}
-        >
-          <InputNumber min={1} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item
-          initialValue={0}
-          label="Stock"
-          name="stock"
-          rules={[{ required: true, message: "Please enter stock" }]}
-        >
-          <InputNumber min={0} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item label="Image URL" name="imageUrl">
-          <Input placeholder="https://example.com/product.jpg" />
-        </Form.Item>
-
-        <Form.Item
-          label="Category"
-          name="categoryId"
-          rules={[{ required: true, message: "Please choose a category" }]}
-        >
-          <Select
-            loading={isCategoriesLoading}
-            options={categoryOptions}
-            placeholder="Select category"
-          />
-        </Form.Item>
-      </Modal>
     </Card>
   );
 }

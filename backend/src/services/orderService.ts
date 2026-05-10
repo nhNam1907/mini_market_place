@@ -53,6 +53,11 @@ export async function checkoutCart(params: { userId: string }) {
             include: {
               shop: true,
               category: true,
+              images: {
+                orderBy: {
+                  sortOrder: "asc",
+                },
+              },
             },
           },
         },
@@ -97,7 +102,7 @@ export async function checkoutCart(params: { userId: string }) {
       orderId: order.id,
       productId: item.productId,
       productName: item.product.name,
-      productImage: item.product.imageUrl,
+      productImage: item.product.images[0]?.imageUrl ?? null,
       unitPrice: item.product.price,
       quantity: item.quantity,
       lineTotal: item.quantity * Number(item.product.price),

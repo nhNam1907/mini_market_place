@@ -4,8 +4,10 @@ import { AppError } from "../lib/errors.js";
 import { getRequestUser } from "../lib/requestUser.js";
 import {
   createSellerProduct,
+  getSellerProductById,
   getSellerProducts,
 } from "../services/sellerProductService.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 export async function getMyProducts(req: Request, res: Response) {
   try {
@@ -32,16 +34,22 @@ export async function getMyProducts(req: Request, res: Response) {
 export async function createProduct(req: Request, res: Response) {
   try {
     const currentUser = getRequestUser(req);
-    const { name, description, price, stock, imageUrl, categoryId } = req.body;
+    const { name, description, price, stock, categoryId } = req.body;
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
 
     const product = await createSellerProduct({
       userId: currentUser.userId,
       name,
       description,
-      price,
-      stock,
-      imageUrl,
+      price: Number(price),
+      stock: Number(stock),
       categoryId,
+      files: files.map((file) => ({
+        buffer: file.buffer,
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        sellerId: currentUser.userId,
+      })),
     });
 
     return res.status(201).json({
@@ -60,3 +68,16 @@ export async function createProduct(req: Request, res: Response) {
     });
   }
 }
+
+export const getSellerProductByIdHandler = asyncHandler(async (req, res) => {
+  const user = getRequestUser(req);
+  const product = await getSellerProductById(
+    req.params.productId as string,
+    user.userId,
+  );
+  return res.status(200).json({
+    success: true,
+    message: "Seller product fetched successfully",
+    data: product,
+  });
+});

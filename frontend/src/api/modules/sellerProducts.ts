@@ -1,6 +1,6 @@
 import type {
-  CreateSellerProductRequest,
   CreateSellerProductResponse,
+  SellerProductDetailResponse,
   SellerProductListResponse,
 } from "@market-place/shared/api";
 
@@ -11,7 +11,12 @@ export async function getSellerProducts() {
   return response.data;
 }
 
-export async function createSellerProduct(payload: CreateSellerProductRequest) {
+export async function getSellerProduct(productId: string) {
+  const response = await apiClient.get<SellerProductDetailResponse>(`/seller/products/${productId}`);
+  return response.data;
+}
+
+export async function createSellerProduct(payload: FormData) {
   const response = await apiClient.post<CreateSellerProductResponse>("/seller/products", payload);
   return response.data;
 }

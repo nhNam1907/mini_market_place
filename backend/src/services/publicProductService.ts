@@ -64,6 +64,11 @@ export async function getPublicProducts(params: PublicProductParameters) {
       orderBy: buildOrderBy(sortBy, sortOrder),
       include: {
         category: true,
+        images: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
         shop: true,
       },
     }),
@@ -76,7 +81,22 @@ export async function getPublicProducts(params: PublicProductParameters) {
       currentPage: pageNumber,
       pageSize,
     },
-    products,
+    products: products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: Number(product.price),
+      stock: product.stock,
+      imageUrl: product.images[0]?.imageUrl ?? null,
+      category: {
+        id: product.category.id,
+        name: product.category.name,
+      },
+      shop: {
+        id: product.shop.id,
+        name: product.shop.name,
+      },
+    })),
   };
 }
 
@@ -85,6 +105,11 @@ export async function getPublicProductById(id: string) {
     where: { id },
     include: {
       category: true,
+      images: {
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
       shop: true,
     },
   });
@@ -98,7 +123,7 @@ export async function getPublicProductById(id: string) {
     name: product.name,
     description: product.description,
     price: Number(product.price),
-    imageUrl: product.imageUrl,
+    imageUrl: product.images[0]?.imageUrl ?? null,
     category: {
       id: product.category.id,
       name: product.category.name,

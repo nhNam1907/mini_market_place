@@ -262,7 +262,7 @@ export type SellerProduct = {
   description: string | null;
   price: number;
   stock: number;
-  imageUrl: string | null;
+  images: SellerProductImage[];
   category: {
     id: string;
     name: string;
@@ -275,10 +275,24 @@ export type SellerProduct = {
   updatedAt: string;
 };
 
+export type SellerProductImage = {
+  id: string;
+  imageUrl: string;
+  imageKey: string;
+  sortOrder: number;
+  createdAt: string;
+};
+
 export type SellerProductListResponse = {
   success: boolean;
   message: string;
   data: SellerProduct[];
+};
+
+export type SellerProductDetailResponse = {
+  success: boolean;
+  message: string;
+  data: SellerProduct;
 };
 
 export type SellerOrderItemStatus =
@@ -389,7 +403,6 @@ export type CreateSellerProductRequest = {
   description?: string;
   price: number;
   stock: number;
-  imageUrl?: string;
   categoryId: string;
 };
 

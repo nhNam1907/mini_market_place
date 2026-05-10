@@ -8,6 +8,11 @@ type CartItemWithProduct = Prisma.CartItemGetPayload<{
     product: {
       include: {
         category: true;
+        images: {
+          orderBy: {
+            sortOrder: "asc";
+          };
+        };
         shop: true;
       };
     };
@@ -20,6 +25,11 @@ type CartItemWithCartAndProduct = Prisma.CartItemGetPayload<{
     product: {
       include: {
         category: true;
+        images: {
+          orderBy: {
+            sortOrder: "asc";
+          };
+        };
         shop: true;
       };
     };
@@ -40,7 +50,7 @@ function mapCartItem(item: CartItemWithProduct | CartItemWithCartAndProduct) {
       description: item.product.description,
       price,
       stock: item.product.stock,
-      imageUrl: item.product.imageUrl,
+      imageUrl: item.product.images[0]?.imageUrl ?? null,
       category: {
         id: item.product.category.id,
         name: item.product.category.name,
@@ -60,6 +70,11 @@ async function getCartItemById(cartItemId: string) {
       product: {
         include: {
           category: true,
+          images: {
+            orderBy: {
+              sortOrder: "asc",
+            },
+          },
           shop: true,
         },
       },
@@ -75,6 +90,11 @@ async function getOwnedCartItem(userId: string, cartItemId: string) {
       product: {
         include: {
           category: true,
+          images: {
+            orderBy: {
+              sortOrder: "asc",
+            },
+          },
           shop: true,
         },
       },
@@ -97,6 +117,11 @@ export async function getCart(userId: string) {
           product: {
             include: {
               category: true,
+              images: {
+                orderBy: {
+                  sortOrder: "asc",
+                },
+              },
               shop: true,
             },
           },
@@ -304,6 +329,11 @@ export async function updateCartItemQuantity({
       product: {
         include: {
           category: true,
+          images: {
+            orderBy: {
+              sortOrder: "asc",
+            },
+          },
           shop: true,
         },
       },

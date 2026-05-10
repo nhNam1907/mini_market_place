@@ -94,6 +94,11 @@ export async function getProductsOfShop(input: GetProductsOfShopInput) {
       take: pageSize,
       orderBy: buildOrderBy(sortBy, sortOrder),
       include: {
+        images: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
         category: {
           select: {
             id: true,
@@ -123,7 +128,7 @@ export async function getProductsOfShop(input: GetProductsOfShopInput) {
       description: product.description,
       price: Number(product.price),
       stock: product.stock,
-      imageUrl: product.imageUrl,
+      imageUrl: product.images[0]?.imageUrl ?? null,
       category: {
         id: product.category.id,
         name: product.category.name,

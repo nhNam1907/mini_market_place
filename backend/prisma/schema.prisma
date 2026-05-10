@@ -63,20 +63,20 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(uuid())
+  id          String         @id @default(uuid())
   name        String
   description String?
-  price       Decimal     @db.Decimal(10, 2)
-  stock       Int         @default(0)
-  imageUrl    String?
+  price       Decimal        @db.Decimal(10, 2)
+  stock       Int            @default(0)
+  images      ProductImage[]
   categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
+  category    Category       @relation(fields: [categoryId], references: [id])
   shopId      String
-  shop        Shop        @relation(fields: [shopId], references: [id])
+  shop        Shop           @relation(fields: [shopId], references: [id])
   cartItems   CartItem[]
   orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([shopId])
   @@index([shopId, categoryId])
@@ -127,18 +127,32 @@ model OrderItem {
   productName  String
   productImage String?
   status       OrderItemStatus @default(PENDING)
-  unitPrice    Decimal  @db.Decimal(10, 2)
+  unitPrice    Decimal         @db.Decimal(10, 2)
   quantity     Int
-  lineTotal    Decimal  @db.Decimal(10, 2)
+  lineTotal    Decimal         @db.Decimal(10, 2)
   shopId       String
   shopName     String
   categoryId   String?
   categoryName String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  product      Product  @relation(fields: [productId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  product      Product         @relation(fields: [productId], references: [id])
 
   @@index([orderId])
   @@index([productId])
   @@index([shopId])
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  imageKey  String
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([productId, sortOrder])
+  @@index([productId])
 }
