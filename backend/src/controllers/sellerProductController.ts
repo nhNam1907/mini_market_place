@@ -4,15 +4,22 @@ import { AppError } from "../lib/errors.js";
 import { getRequestUser } from "../lib/requestUser.js";
 import {
   createSellerProduct,
+  deleteSellerProduct,
   getSellerProductById,
   getSellerProducts,
+  replaceSellerProductImages,
+  updateSellerProduct,
 } from "../services/sellerProductService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export async function getMyProducts(req: Request, res: Response) {
+  const status = req?.query?.status;
   try {
     const currentUser = getRequestUser(req);
-    const products = await getSellerProducts({ userId: currentUser.userId });
+    const products = await getSellerProducts({
+      userId: currentUser.userId,
+      status: typeof status === "string" ? status : undefined,
+    });
 
     return res.status(200).json({
       success: true,
@@ -79,5 +86,62 @@ export const getSellerProductByIdHandler = asyncHandler(async (req, res) => {
     success: true,
     message: "Seller product fetched successfully",
     data: product,
+  });
+});
+
+export const updateSellerProductHandler = asyncHandler(async (req, res) => {
+  const user = getRequestUser(req);
+  const { name, description, price, stock, categoryId } = req.body;
+  const productId = req.params.productId as string;
+
+  const updatedProduct = await updateSellerProduct(user.userId, productId, {
+    name,
+    description,
+    price: price === undefined ? undefined : Number(price),
+    stock: stock === undefined ? undefined : Number(stock),
+    categoryId,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Seller product updated successfully",
+    data: updatedProduct,
+  });
+});
+
+export const replaceSellerProductImagesHandler = asyncHandler(
+  async (req, res) => {
+    const user = getRequestUser(req);
+    const productId = req.params.productId as string;
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+
+    const updatedProduct = await replaceSellerProductImages({
+      userId: user.userId,
+      productId,
+      files: files.map((file) => ({
+        buffer: file.buffer,
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        sellerId: user.userId,
+      })),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Seller product images replaced successfully",
+      data: updatedProduct,
+    });
+  },
+);
+
+export const deleteSellerProductHandler = asyncHandler(async (req, res) => {
+  const user = getRequestUser(req);
+  const productId = req.params.productId as string;
+
+  await deleteSellerProduct(user.userId, productId);
+
+  return res.status(200).json({
+    success: true,
+    message: "Seller product deleted successfully",
   });
 });

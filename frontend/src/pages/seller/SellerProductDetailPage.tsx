@@ -1,13 +1,37 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Descriptions, Empty, Image, Row, Skeleton, Space, Typography } from "antd";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeftOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { App, Button, Card, Col, Descriptions, Empty, Image, Row, Skeleton, Space, Typography } from "antd";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { useSellerProductQuery } from "@/hooks/useSellerProducts";
+import { useDeleteSellerProductMutation, useSellerProductQuery } from "@/hooks/useSellerProducts";
 
 function SellerProductDetailPage() {
+  const { message, modal } = App.useApp();
+  const navigate = useNavigate();
   const { productId } = useParams();
   const { data, isLoading } = useSellerProductQuery(productId);
+  const deleteMutation = useDeleteSellerProductMutation(productId ?? "");
   const product = data?.data;
+
+  const handleDeleteProduct = () => {
+    if (!product) {
+      return;
+    }
+
+    modal.confirm({
+      title: "Delete product?",
+      content: "This product will be hidden from the marketplace. Existing order history will be kept.",
+      okText: "Delete",
+      okButtonProps: {
+        danger: true,
+        loading: deleteMutation.isPending,
+      },
+      onOk: async () => {
+        const response = await deleteMutation.mutateAsync();
+        await message.success(response.message);
+        navigate("/seller/products");
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -33,12 +57,22 @@ function SellerProductDetailPage() {
 
       <Card bordered={false}>
         <Space direction="vertical" size={20} style={{ width: "100%" }}>
-          <div>
-            <Typography.Title level={3}>{product.name}</Typography.Title>
-            <Typography.Text type="secondary">
-              Product detail scoped to your seller shop.
-            </Typography.Text>
-          </div>
+          <Space align="start" style={{ justifyContent: "space-between", width: "100%" }}>
+            <div>
+              <Typography.Title level={3}>{product.name}</Typography.Title>
+              <Typography.Text type="secondary">
+                Product detail scoped to your seller shop.
+              </Typography.Text>
+            </div>
+            <Space>
+              <Button danger icon={<DeleteOutlined />} onClick={handleDeleteProduct}>
+                Delete product
+              </Button>
+              <Button icon={<EditOutlined />} type="primary">
+                <Link to={`/seller/products/${product.id}/edit`}>Edit product</Link>
+              </Button>
+            </Space>
+          </Space>
 
           <Descriptions bordered column={2}>
             <Descriptions.Item label="Category">{product.category.name}</Descriptions.Item>

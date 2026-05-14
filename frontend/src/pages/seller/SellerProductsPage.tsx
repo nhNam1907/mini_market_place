@@ -1,9 +1,12 @@
-import type { SellerProduct } from "@market-place/shared/api";
+import type { SellerProduct, SellerProductStatus } from "@market-place/shared/api";
 import type { TableProps } from "antd";
-import { Button, Card, Space, Table, Typography } from "antd";
+import { Button, Card, Segmented, Space, Table, Typography } from "antd";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useSellerProductsQuery } from "@/hooks/useSellerProducts";
+
+type SellerProductStatusFilter = "all" | SellerProductStatus;
 
 const columns: TableProps<SellerProduct>["columns"] = [
   {
@@ -37,7 +40,9 @@ const columns: TableProps<SellerProduct>["columns"] = [
 
 function SellerProductsPage() {
   const navigate = useNavigate();
-  const { data, isLoading } = useSellerProductsQuery();
+  const [status, setStatus] = useState<SellerProductStatusFilter>("all");
+  const statusParam = status === "all" ? undefined : status;
+  const { data, isLoading } = useSellerProductsQuery(statusParam);
   const products = data?.data ?? [];
 
   return (
@@ -54,6 +59,16 @@ function SellerProductsPage() {
             <Link to="/seller/products/new">Add product</Link>
           </Button>
         </Space>
+
+        <Segmented<SellerProductStatusFilter>
+          onChange={setStatus}
+          options={[
+            { label: "All", value: "all" },
+            { label: "Active", value: "active" },
+            { label: "Deleted", value: "inactive" },
+          ]}
+          value={status}
+        />
 
         <Table<SellerProduct>
           columns={columns}

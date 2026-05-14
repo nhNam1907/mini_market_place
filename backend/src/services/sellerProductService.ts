@@ -11,6 +11,7 @@ import {
 
 type GetSellerProductsInput = {
   userId: string;
+  status?: string;
 };
 
 type SellerProductWithRelations = Prisma.ProductGetPayload<{
@@ -111,13 +112,33 @@ async function getSellerShop(userId: string) {
   return shop;
 }
 
-export async function getSellerProducts({ userId }: GetSellerProductsInput) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const statusMap: any = {
+  active: true,
+  inactive: false,
+};
+
+export async function getSellerProducts({
+  userId,
+  status,
+}: GetSellerProductsInput) {
   const shop = await getSellerShop(userId);
 
+  if (status && !["active", "inactive"].includes(status)) {
+    throw new AppError(
+      ErrorCode.VALIDATION_FAILED,
+      400,
+      "Invalid status value. Allowed values are 'active' or 'inactive'",
+    );
+  }
+
+  const whereClause: Prisma.ProductWhereInput = {
+    shopId: shop.id,
+    isActive: !status ? undefined : !!statusMap[status],
+  };
+
   const products = await prisma.product.findMany({
-    where: {
-      shopId: shop.id,
-    },
+    where: whereClause,
     include: {
       category: true,
       shop: true,
@@ -279,4 +300,224 @@ export async function getSellerProductById(productId: string, userId: string) {
   }
 
   return mapSellerProduct(product);
+}
+
+type UpdateSellerProductInput = {
+  name?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  categoryId?: string;
+};
+
+export async function updateSellerProduct(
+  userId: string,
+  productId: string,
+  payload: UpdateSellerProductInput,
+) {
+  if (
+    payload.price !== undefined &&
+    (!Number.isFinite(payload.price) || payload.price <= 0)
+  ) {
+    throw new AppError(
+      ErrorCode.VALIDATION_FAILED,
+      400,
+      "Price must be greater than 0",
+    );
+  }
+
+  if (
+    payload.stock !== undefined &&
+    (!Number.isInteger(payload.stock) || payload.stock < 0)
+  ) {
+    throw new AppError(
+      ErrorCode.VALIDATION_FAILED,
+      400,
+      "Stock must be 0 or greater",
+    );
+  }
+  const shop = await getSellerShop(userId);
+
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shopId: shop.id,
+    },
+  });
+
+  if (!product) {
+    throw new AppError(ErrorCode.NOT_FOUND, 404, "Product not found");
+  }
+
+  if (payload.categoryId) {
+    const category = await prisma.category.findUnique({
+      where: {
+        id: payload.categoryId,
+      },
+    });
+
+    if (!category) {
+      throw new AppError(ErrorCode.NOT_FOUND, 404, "Category not found");
+    }
+  } else {
+    payload.categoryId = product.categoryId;
+  }
+
+  const dataUpdate = {
+    name: payload.name ?? product.name,
+    description: payload.description ?? product.description,
+    price: payload.price ?? product.price,
+    stock: payload.stock ?? product.stock,
+    categoryId: payload.categoryId,
+  };
+
+  const updateProduct = await prisma.product.update({
+    where: {
+      id: productId,
+    },
+    data: dataUpdate,
+    include: {
+      category: true,
+      shop: true,
+      images: {
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
+    },
+  });
+
+  return mapSellerProduct(updateProduct);
+}
+
+export async function replaceSellerProductImages(params: {
+  userId: string;
+  productId: string;
+  files: UploadProductImageInput[];
+}) {
+  const { userId, productId, files } = params;
+
+  if (!files.length) {
+    throw new AppError(
+      ErrorCode.MISSING_FIELDS,
+      400,
+      "At least one product image is required",
+    );
+  }
+
+  if (files.length > MAX_PRODUCT_IMAGES) {
+    throw new AppError(
+      ErrorCode.VALIDATION_FAILED,
+      400,
+      `A product can have at most ${MAX_PRODUCT_IMAGES} images`,
+    );
+  }
+
+  const shop = await getSellerShop(userId);
+
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shopId: shop.id,
+    },
+    include: {
+      images: true,
+    },
+  });
+
+  if (!product) {
+    throw new AppError(ErrorCode.NOT_FOUND, 404, "Product not found");
+  }
+
+  const oldImages = product.images;
+
+  const uploadedImages = await uploadProductImages(
+    files.map((file) => ({
+      ...file,
+      sellerId: shop.id,
+    })),
+  );
+
+  validateProductImages(uploadedImages);
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.productImage.deleteMany({
+        where: {
+          productId: product.id,
+        },
+      });
+
+      await tx.productImage.createMany({
+        data: uploadedImages.map((image) => ({
+          productId: product.id,
+          imageUrl: image.imageUrl,
+          imageKey: image.imageKey,
+          sortOrder: image.sortOrder,
+        })),
+      });
+    });
+  } catch (error) {
+    await deleteProductImages(uploadedImages.map((image) => image.imageKey));
+    throw error;
+  }
+
+  try {
+    await deleteProductImages(oldImages.map((img) => img.imageKey));
+  } catch (error) {
+    console.error("Failed to delete old product images", error);
+  }
+
+  const updatedProduct = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shopId: shop.id,
+    },
+    include: {
+      category: true,
+      shop: true,
+      images: {
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
+    },
+  });
+
+  if (!updatedProduct) {
+    throw new AppError(ErrorCode.NOT_FOUND, 404, "Product not found");
+  }
+
+  return mapSellerProduct(updatedProduct);
+}
+
+export async function deleteSellerProduct(userId: string, productId: string) {
+  const shop = await getSellerShop(userId);
+
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shopId: shop.id,
+    },
+    include: {
+      images: true,
+    },
+  });
+
+  if (!product) {
+    throw new AppError(ErrorCode.NOT_FOUND, 404, "Product not found");
+  }
+
+  await prisma.product.update({
+    where: {
+      id: productId,
+      shopId: shop.id,
+    },
+    data: {
+      isActive: false,
+      deletedAt: new Date(),
+    },
+  });
+
+  return;
 }

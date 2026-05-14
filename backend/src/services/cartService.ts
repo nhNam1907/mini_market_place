@@ -83,29 +83,31 @@ async function getCartItemById(cartItemId: string) {
 }
 
 async function getOwnedCartItem(userId: string, cartItemId: string) {
-  return prisma.cartItem.findUnique({
-    where: { id: cartItemId },
-    include: {
-      cart: true,
-      product: {
-        include: {
-          category: true,
-          images: {
-            orderBy: {
-              sortOrder: "asc",
+  return prisma.cartItem
+    .findUnique({
+      where: { id: cartItemId },
+      include: {
+        cart: true,
+        product: {
+          include: {
+            category: true,
+            images: {
+              orderBy: {
+                sortOrder: "asc",
+              },
             },
+            shop: true,
           },
-          shop: true,
         },
       },
-    },
-  }).then((cartItem) => {
-    if (!cartItem || cartItem.cart.userId !== userId) {
-      throw new AppError(ErrorCode.NOT_FOUND, 404, "Cart item not found");
-    }
+    })
+    .then((cartItem) => {
+      if (!cartItem || cartItem.cart.userId !== userId) {
+        throw new AppError(ErrorCode.NOT_FOUND, 404, "Cart item not found");
+      }
 
-    return cartItem;
-  });
+      return cartItem;
+    });
 }
 
 export async function getCart(userId: string) {
@@ -171,7 +173,11 @@ type AddCartItemParams = {
   quantity: number;
 };
 
-export async function addCartItem({ userId, productId, quantity }: AddCartItemParams) {
+export async function addCartItem({
+  userId,
+  productId,
+  quantity,
+}: AddCartItemParams) {
   if (!userId || !productId) {
     throw new AppError(
       ErrorCode.MISSING_FIELDS,
@@ -189,7 +195,7 @@ export async function addCartItem({ userId, productId, quantity }: AddCartItemPa
   }
 
   const product = await prisma.product.findUnique({
-    where: { id: productId },
+    where: { id: productId, isActive: true },
   });
 
   if (!product) {

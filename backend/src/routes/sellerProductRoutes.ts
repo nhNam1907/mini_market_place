@@ -2,8 +2,11 @@ import { Router } from "express";
 
 import {
   createProduct,
+  deleteSellerProductHandler,
   getMyProducts,
   getSellerProductByIdHandler,
+  replaceSellerProductImagesHandler,
+  updateSellerProductHandler,
 } from "../controllers/sellerProductController.js";
 import { uploadProductImages } from "../middlewares/uploadProductImage.js";
 import { requireAuth } from "../middlewares/requireAuth.js";
@@ -32,6 +35,28 @@ router.get(
   requireAuth,
   requireRole(USER_ROLE.SELLER),
   getSellerProductByIdHandler,
+);
+
+router.patch(
+  "/products/:productId",
+  requireAuth,
+  requireRole(USER_ROLE.SELLER),
+  updateSellerProductHandler,
+);
+
+router.put(
+  "/products/:productId/images",
+  requireAuth,
+  requireRole(USER_ROLE.SELLER),
+  uploadProductImages,
+  replaceSellerProductImagesHandler,
+);
+
+router.delete(
+  "/products/:productId",
+  requireAuth,
+  requireRole(USER_ROLE.SELLER),
+  deleteSellerProductHandler,
 );
 
 export default router;

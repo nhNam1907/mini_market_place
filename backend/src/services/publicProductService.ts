@@ -53,6 +53,7 @@ export async function getPublicProducts(params: PublicProductParameters) {
           ],
         }
       : {}),
+    isActive: true,
   };
 
   const [totalItems, products] = await Promise.all([
@@ -102,7 +103,7 @@ export async function getPublicProducts(params: PublicProductParameters) {
 
 export async function getPublicProductById(id: string) {
   const product = await prisma.product.findUnique({
-    where: { id },
+    where: { id, isActive: true },
     include: {
       category: true,
       images: {

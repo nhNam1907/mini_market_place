@@ -78,6 +78,14 @@ export async function checkoutCart(params: { userId: string }) {
       throw new AppError(ErrorCode.PRODUCT_NOT_FOUND, 404, "Product not found");
     }
 
+    if (!product.isActive) {
+      throw new AppError(
+        ErrorCode.PRODUCT_NOT_FOUND,
+        404,
+        "Product is no longer available",
+      );
+    }
+
     if (item.quantity > product.stock) {
       throw new AppError(
         ErrorCode.INSUFFICIENT_STOCK,

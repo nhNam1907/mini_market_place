@@ -289,6 +289,12 @@ export type SellerProductListResponse = {
   data: SellerProduct[];
 };
 
+export type SellerProductStatus = "active" | "inactive";
+
+export type SellerProductListParams = {
+  status?: SellerProductStatus;
+};
+
 export type SellerProductDetailResponse = {
   success: boolean;
   message: string;
@@ -410,6 +416,25 @@ export type CreateSellerProductResponse = {
   success: boolean;
   message: string;
   data: SellerProduct;
+};
+
+export type UpdateSellerProductRequest = Partial<CreateSellerProductRequest>;
+
+export type UpdateSellerProductResponse = {
+  success: boolean;
+  message: string;
+  data: SellerProduct;
+};
+
+export type ReplaceSellerProductImagesResponse = {
+  success: boolean;
+  message: string;
+  data: SellerProduct;
+};
+
+export type DeleteSellerProductResponse = {
+  success: boolean;
+  message: string;
 };
 
 export type ProductSummary = {
