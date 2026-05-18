@@ -62,6 +62,8 @@ function mapSellerProduct(product: SellerProductWithRelations) {
     })),
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
+    deletedAt: product.deletedAt,
+    isActive: product.isActive,
   };
 }
 
@@ -520,4 +522,64 @@ export async function deleteSellerProduct(userId: string, productId: string) {
   });
 
   return;
+}
+
+export async function restoreSellerProduct(userId: string, productId: string) {
+  const shop = await getSellerShop(userId);
+
+  const clauseWhere = {
+    id: productId,
+    shopId: shop.id,
+  };
+
+  const product = await prisma.product.findFirst({
+    where: clauseWhere,
+  });
+
+  if (!product) {
+    throw new AppError(ErrorCode.NOT_FOUND, 404, "Product not found");
+  }
+
+  if (product.isActive === true) {
+    throw new AppError(ErrorCode.BAD_REQUEST, 400, "Product is already active");
+  }
+
+  const rq = await prisma.product.update({
+    where: clauseWhere,
+    data: {
+      isActive: true,
+      deletedAt: null,
+    },
+  });
+
+  if (!rq) {
+    throw new AppError(
+      ErrorCode.INTERNAL_SERVER_ERROR,
+      500,
+      "Failed to restore product",
+    );
+  }
+
+  const updatedProduct = await prisma.product.findFirst({
+    where: clauseWhere,
+    include: {
+      category: true,
+      shop: true,
+      images: {
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
+    },
+  });
+
+  if (!updatedProduct) {
+    throw new AppError(
+      ErrorCode.NOT_FOUND,
+      404,
+      "Product not found after restore",
+    );
+  }
+
+  return mapSellerProduct(updatedProduct);
 }

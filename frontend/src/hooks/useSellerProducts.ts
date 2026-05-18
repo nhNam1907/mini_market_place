@@ -6,6 +6,7 @@ import {
   getSellerProduct,
   getSellerProducts,
   replaceSellerProductImages,
+  restoreSellerProduct,
   updateSellerProduct,
 } from "@/api/modules/sellerProducts";
 import type { SellerProductStatus, UpdateSellerProductRequest } from "@market-place/shared/api";
@@ -68,6 +69,18 @@ export function useDeleteSellerProductMutation(productId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["seller-products"] });
       void queryClient.removeQueries({ queryKey: ["seller-product", productId] });
+    },
+  });
+}
+
+export function useRestoreSellerProductMutation(productId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => restoreSellerProduct(productId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["seller-products"] });
+      void queryClient.invalidateQueries({ queryKey: ["seller-product", productId] });
     },
   });
 }

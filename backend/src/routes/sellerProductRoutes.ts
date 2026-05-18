@@ -6,6 +6,7 @@ import {
   getMyProducts,
   getSellerProductByIdHandler,
   replaceSellerProductImagesHandler,
+  restoreSellerProductHandler,
   updateSellerProductHandler,
 } from "../controllers/sellerProductController.js";
 import { uploadProductImages } from "../middlewares/uploadProductImage.js";
@@ -57,6 +58,13 @@ router.delete(
   requireAuth,
   requireRole(USER_ROLE.SELLER),
   deleteSellerProductHandler,
+);
+
+router.patch(
+  "/products/:productId/restore",
+  requireAuth,
+  requireRole(USER_ROLE.SELLER),
+  restoreSellerProductHandler,
 );
 
 export default router;

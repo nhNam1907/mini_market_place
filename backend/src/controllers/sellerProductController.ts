@@ -8,6 +8,7 @@ import {
   getSellerProductById,
   getSellerProducts,
   replaceSellerProductImages,
+  restoreSellerProduct,
   updateSellerProduct,
 } from "../services/sellerProductService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -143,5 +144,18 @@ export const deleteSellerProductHandler = asyncHandler(async (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Seller product deleted successfully",
+  });
+});
+
+export const restoreSellerProductHandler = asyncHandler(async (req, res) => {
+  const user = getRequestUser(req);
+  const productId = req.params.productId as string;
+
+  const updatedProduct = await restoreSellerProduct(user.userId, productId);
+
+  return res.status(200).json({
+    success: true,
+    message: "Seller product restored successfully",
+    data: updatedProduct,
   });
 });

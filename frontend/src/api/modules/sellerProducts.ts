@@ -2,6 +2,7 @@ import type {
   CreateSellerProductResponse,
   DeleteSellerProductResponse,
   ReplaceSellerProductImagesResponse,
+  RestoreSellerProductResponse,
   SellerProductDetailResponse,
   SellerProductListResponse,
   SellerProductListParams,
@@ -41,5 +42,10 @@ export async function replaceSellerProductImages(productId: string, payload: For
 
 export async function deleteSellerProduct(productId: string) {
   const response = await apiClient.delete<DeleteSellerProductResponse>(`/seller/products/${productId}`);
+  return response.data;
+}
+
+export async function restoreSellerProduct(productId: string) {
+  const response = await apiClient.patch<RestoreSellerProductResponse>(`/seller/products/${productId}/restore`);
   return response.data;
 }

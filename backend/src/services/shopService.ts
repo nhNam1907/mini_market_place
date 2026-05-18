@@ -65,6 +65,7 @@ export async function getProductsOfShop(input: GetProductsOfShopInput) {
 
   const whereClause: Prisma.ProductWhereInput = {
     shopId,
+    isActive: true,
     ...(categoryId ? { categoryId } : {}),
     ...(search
       ? {

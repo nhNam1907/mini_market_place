@@ -122,6 +122,32 @@ export type PublicShopDetailResponse = {
   data: PublicShop;
 };
 
+export type SellerShop = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+  };
+};
+
+export type SellerShopDetailResponse = {
+  success: boolean;
+  message: string;
+  data: SellerShop;
+};
+
+export type UpdateSellerShopRequest = {
+  name?: string;
+  description?: string | null;
+};
+
+export type UpdateSellerShopResponse = SellerShopDetailResponse;
+
 export type PublicShopProductListResponse = {
   success: boolean;
   message: string;
@@ -273,6 +299,8 @@ export type SellerProduct = {
   };
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+  isActive: boolean;
 };
 
 export type SellerProductImage = {
@@ -435,6 +463,12 @@ export type ReplaceSellerProductImagesResponse = {
 export type DeleteSellerProductResponse = {
   success: boolean;
   message: string;
+};
+
+export type RestoreSellerProductResponse = {
+  success: boolean;
+  message: string;
+  data: SellerProduct;
 };
 
 export type ProductSummary = {
