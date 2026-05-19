@@ -56,7 +56,19 @@ function AuthFormCard({ mode, portal }: AuthFormCardProps) {
     }
 
     const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
-    return from && from.startsWith("/") ? from : "/account";
+
+    if (
+      from &&
+      from.startsWith("/") &&
+      !from.startsWith("/admin") &&
+      !from.startsWith("/seller") &&
+      from !== "/login" &&
+      from !== "/register"
+    ) {
+      return from;
+    }
+
+    return "/account";
   };
 
   const handleLogin = async (values: LoginFormValues) => {

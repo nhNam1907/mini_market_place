@@ -471,6 +471,50 @@ export type RestoreSellerProductResponse = {
   data: SellerProduct;
 };
 
+export type SellerDashboardRecentOrderItem = {
+  id: string;
+  orderId: string;
+  productId: string;
+  productName?: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  status: SellerOrderItemStatus;
+  createdAt: string;
+  buyer: {
+    name: string;
+    email: string;
+  };
+};
+
+export type SellerDashboardMetrics = {
+  products: {
+    totalProducts: number;
+    activeProducts: number;
+    inactiveProducts: number;
+  };
+  orders: {
+    totalOrderedProducts: number;
+    pending: number;
+    confirmed?: number;
+    shipping: number;
+    delivered: number;
+    cancelled: number;
+    completed: number;
+  };
+  revenue: {
+    revenue: number;
+    completed: number;
+  };
+  recentOrderItems: SellerDashboardRecentOrderItem[];
+};
+
+export type SellerDashboardMetricsResponse = {
+  success: boolean;
+  message: string;
+  data: SellerDashboardMetrics;
+};
+
 export type ProductSummary = {
   id: string;
   name: string;

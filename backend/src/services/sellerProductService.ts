@@ -8,6 +8,7 @@ import {
   type UploadedProductImage,
   uploadProductImages,
 } from "./uploadService.js";
+import { OrderItemStatus } from "../types/orderStatus.js";
 
 type GetSellerProductsInput = {
   userId: string;
@@ -582,4 +583,113 @@ export async function restoreSellerProduct(userId: string, productId: string) {
   }
 
   return mapSellerProduct(updatedProduct);
+}
+
+export async function getSellerMetrics(userId: string) {
+  const shop = await prisma.shop.findFirst({
+    where: {
+      ownerId: userId,
+    },
+  });
+
+  if (!shop) {
+    throw new AppError(ErrorCode.NOT_FOUND, 404, "Seller shop not found");
+  }
+
+  const totalProducts = await prisma.product.count({
+    where: {
+      shopId: shop.id,
+    },
+  });
+
+  const allProducts = await prisma.product.findMany({
+    where: {
+      shopId: shop.id,
+    },
+  });
+
+  const activeProducts = allProducts.filter((product) => product.isActive);
+
+  const inactiveProducts = allProducts.filter((product) => !product.isActive);
+
+  const orderedProducts = await prisma.orderItem.findMany({
+    where: {
+      shopId: shop.id,
+    },
+  });
+
+  const totalOrderedProducts = orderedProducts.length;
+
+  const completedOrders = orderedProducts.filter(
+    (order) => order.status === OrderItemStatus.COMPLETED,
+  );
+
+  const revenue = completedOrders.reduce(
+    (sum, order) => sum + order.quantity * Number(order.unitPrice),
+    0,
+  );
+
+  const recentOrderItems = await prisma.orderItem.findMany({
+    where: {
+      shopId: shop.id,
+      status: "CONFIRMED",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      order: {
+        include: {
+          user: true,
+        },
+      },
+    },
+    take: 5,
+  });
+
+  return {
+    products: {
+      totalProducts,
+      activeProducts: activeProducts.length,
+      inactiveProducts: inactiveProducts.length,
+    },
+    orders: {
+      totalOrderedProducts,
+      pending: orderedProducts.filter(
+        (order) => order.status === OrderItemStatus.PENDING,
+      ).length,
+      shipping: orderedProducts.filter(
+        (order) => order.status === OrderItemStatus.SHIPPING,
+      ).length,
+      delivered: orderedProducts.filter(
+        (order) => order.status === OrderItemStatus.DELIVERED,
+      ).length,
+      cancelled: orderedProducts.filter(
+        (order) => order.status === OrderItemStatus.CANCELLED,
+      ).length,
+      completed: completedOrders.length,
+      confirmed: orderedProducts.filter(
+        (order) => order.status === OrderItemStatus.CONFIRMED,
+      ).length,
+    },
+    revenue: {
+      revenue,
+      completed: completedOrders.length,
+    },
+    recentOrderItems: recentOrderItems.map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      status: item.status,
+      createdAt: item.createdAt,
+      orderId: item.orderId,
+      lineTotal: item.quantity * Number(item.unitPrice),
+      productName: item.productName,
+      buyer: {
+        name: item.order.user.name,
+        email: item.order.user.email,
+      },
+    })),
+  };
 }

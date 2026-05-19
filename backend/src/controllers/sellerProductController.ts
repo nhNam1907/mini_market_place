@@ -5,6 +5,7 @@ import { getRequestUser } from "../lib/requestUser.js";
 import {
   createSellerProduct,
   deleteSellerProduct,
+  getSellerMetrics,
   getSellerProductById,
   getSellerProducts,
   replaceSellerProductImages,
@@ -159,3 +160,16 @@ export const restoreSellerProductHandler = asyncHandler(async (req, res) => {
     data: updatedProduct,
   });
 });
+
+export const getSellerMetricHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = getRequestUser(req);
+    const metrics = await getSellerMetrics(user.userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Seller metrics fetched successfully",
+      data: metrics,
+    });
+  },
+);

@@ -7,8 +7,9 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Avatar, Button, Layout, Menu, Space, Typography } from "antd";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
+import { useLogout } from "@/hooks/useLogout";
 import { useAuthStore } from "@/store/authStore";
 
 const { Header, Content, Sider } = Layout;
@@ -39,17 +40,11 @@ const menuItems = [
 
 function SellerLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const logout = useLogout("/login");
   const selectedMenuKey = location.pathname.startsWith("/seller/orders/")
     ? "/seller/orders"
     : location.pathname;
-
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/login");
-  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -77,7 +72,7 @@ function SellerLayout() {
             <Text strong style={{ color: "#fff" }}>
               {user?.name ?? "Seller"}
             </Text>
-            <Button ghost icon={<LogoutOutlined />} onClick={handleLogout}>
+            <Button ghost icon={<LogoutOutlined />} onClick={logout}>
               Logout
             </Button>
           </Space>

@@ -4,6 +4,7 @@ import {
   createProduct,
   deleteSellerProductHandler,
   getMyProducts,
+  getSellerMetricHandler,
   getSellerProductByIdHandler,
   replaceSellerProductImagesHandler,
   restoreSellerProductHandler,
@@ -65,6 +66,13 @@ router.patch(
   requireAuth,
   requireRole(USER_ROLE.SELLER),
   restoreSellerProductHandler,
+);
+
+router.get(
+  "/metrics",
+  requireAuth,
+  requireRole(USER_ROLE.SELLER),
+  getSellerMetricHandler,
 );
 
 export default router;

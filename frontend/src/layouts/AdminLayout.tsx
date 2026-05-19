@@ -6,8 +6,9 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Avatar, Button, Layout, Menu, Space, Typography } from "antd";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
+import { useLogout } from "@/hooks/useLogout";
 import { useAuthStore } from "@/store/authStore";
 
 const { Header, Content, Sider } = Layout;
@@ -33,14 +34,8 @@ const menuItems = [
 
 function AdminLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
-
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/admin/login");
-  };
+  const logout = useLogout("/admin/login");
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -68,7 +63,7 @@ function AdminLayout() {
             <Text strong style={{ color: "#fff" }}>
               {user?.name ?? "Admin"}
             </Text>
-            <Button ghost icon={<LogoutOutlined />} onClick={handleLogout}>
+            <Button ghost icon={<LogoutOutlined />} onClick={logout}>
               Logout
             </Button>
           </Space>

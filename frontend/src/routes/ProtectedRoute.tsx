@@ -8,9 +8,10 @@ type ProtectedRouteProps = {
 
 function ProtectedRoute({ redirectTo = "/login" }: ProtectedRouteProps) {
   const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
   const location = useLocation();
 
-  if (!token) {
+  if (!token || !user) {
     return <Navigate replace state={{ from: location }} to={redirectTo} />;
   }
 

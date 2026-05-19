@@ -2,6 +2,7 @@ import type { LoginRequest, RegisterRequest } from "@market-place/shared/api";
 import { useMutation } from "@tanstack/react-query";
 
 import { getMe, login, register } from "@/api/modules/auth";
+import { queryClient } from "@/lib/queryClient";
 import { useAuthStore } from "@/store/authStore";
 
 export function useRegisterMutation() {
@@ -28,28 +29,16 @@ export function useLoginMutation() {
       };
     },
     onSuccess: ({ token, user }) => {
+      queryClient.clear();
       setAuth({ token, user });
     },
     onError: () => {
+      queryClient.clear();
       clearAuth();
     },
   });
 }
 
 async function getMeWithToken(token: string) {
-  const previousToken = useAuthStore.getState().token;
-
-  useAuthStore.getState().setToken(token);
-
-  try {
-    return await getMe();
-  } catch (error) {
-    if (previousToken) {
-      useAuthStore.getState().setToken(previousToken);
-    } else {
-      useAuthStore.getState().clearAuth();
-    }
-
-    throw error;
-  }
+  return getMe(token);
 }

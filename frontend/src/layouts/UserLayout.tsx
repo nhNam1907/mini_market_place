@@ -8,6 +8,7 @@ import {
 import { Avatar, Button, Layout, Menu, Space, Typography } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
+import { useLogout } from "@/hooks/useLogout";
 import { useAuthStore } from "@/store/authStore";
 
 const { Header, Content, Footer } = Layout;
@@ -17,7 +18,7 @@ function UserLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const logout = useLogout("/");
 
   const menuItems = [
     { key: "/", label: <Link to="/">Home</Link> },
@@ -25,11 +26,6 @@ function UserLayout() {
     { key: "/account", label: <Link to="/account">My Account</Link> },
     { key: "/orders", label: <Link to="/orders">My Orders</Link> },
   ];
-
-  const handleLogout = () => {
-    clearAuth();
-    navigate("/");
-  };
 
   return (
     <Layout className="user-shell">
@@ -54,7 +50,7 @@ function UserLayout() {
             <Space>
               <Avatar icon={<UserOutlined />} />
               <Text strong>{user.name}</Text>
-              <Button icon={<LogoutOutlined />} onClick={handleLogout} type="text">
+              <Button icon={<LogoutOutlined />} onClick={logout} type="text">
                 Logout
               </Button>
             </Space>

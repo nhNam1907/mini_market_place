@@ -18,7 +18,9 @@ export async function login(payload: LoginRequest) {
   return response.data;
 }
 
-export async function getMe() {
-  const response = await apiClient.get<MeSuccessResponse>("/auth/me");
+export async function getMe(token?: string) {
+  const response = await apiClient.get<MeSuccessResponse>("/auth/me", {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
   return response.data;
 }

@@ -13,19 +13,19 @@ function GuestOnlyRoute({ allowedRole, fallbackTo = "/" }: GuestOnlyRouteProps) 
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
 
-  if (!token) {
+  if (!token || !user) {
     return <Outlet />;
   }
 
-  if (allowedRole && user?.role !== allowedRole) {
+  if (allowedRole && user.role !== allowedRole) {
     return <Navigate replace state={{ from: location }} to={fallbackTo} />;
   }
 
-  if (user?.role === "ADMIN") {
+  if (user.role === "ADMIN") {
     return <Navigate replace state={{ from: location }} to="/admin" />;
   }
 
-  if (user?.role === "SELLER") {
+  if (user.role === "SELLER") {
     return <Navigate replace state={{ from: location }} to="/seller" />;
   }
 
